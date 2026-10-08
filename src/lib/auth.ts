@@ -28,7 +28,9 @@ export async function requireActiveProfile(): Promise<Profile> {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.status !== "active") redirect("/login");
+  if (!profile) redirect("/login");
+  if (profile.status === "pending") redirect("/vantar");
+  if (profile.status === "inactive") redirect("/login");
 
   return profile as Profile;
 }
