@@ -1,5 +1,15 @@
-// Placeholder types until `npm run db:types` is run after the first migration.
-// Keep in sync with supabase/migrations/*.sql until generated types replace this.
+// Placeholder types until `npm run db:types` is run after migrations.
+// Keep in sync with supabase/migrations/*.sql.
+
+export type TechniqueCategory =
+  | "guards"
+  | "passing"
+  | "takedowns"
+  | "upper_body_submissions"
+  | "lower_body_submissions"
+  | "sweeps";
+
+export type TechniqueLevel = "beginner" | "intermediate" | "advanced";
 
 export type Database = {
   public: {
@@ -74,6 +84,76 @@ export type Database = {
           }
         ];
       };
+      sessions: {
+        Row: {
+          id: string;
+          session_date: string;
+          time_slot: string;
+          class_type: string;
+          notes: string | null;
+          published: boolean;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_date: string;
+          time_slot: string;
+          class_type: string;
+          notes?: string | null;
+          published?: boolean;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_date?: string;
+          time_slot?: string;
+          class_type?: string;
+          notes?: string | null;
+          published?: boolean;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      session_techniques: {
+        Row: {
+          id: string;
+          session_id: string;
+          technique_id: string;
+          position: number;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          technique_id: string;
+          position: number;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          technique_id?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "session_techniques_session_id_fkey";
+            columns: ["session_id"];
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_techniques_technique_id_fkey";
+            columns: ["technique_id"];
+            referencedRelation: "techniques";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -85,13 +165,3 @@ export type Database = {
     };
   };
 };
-
-export type TechniqueCategory =
-  | "guards"
-  | "passing"
-  | "takedowns"
-  | "upper_body_submissions"
-  | "lower_body_submissions"
-  | "sweeps";
-
-export type TechniqueLevel = "beginner" | "intermediate" | "advanced";
