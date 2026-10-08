@@ -154,6 +154,79 @@ export type Database = {
           }
         ];
       };
+      strength_programs: {
+        Row: {
+          id: string;
+          type: "base" | "peak";
+          title: string;
+          description: string | null;
+          total_weeks: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          type: "base" | "peak";
+          title: string;
+          description?: string | null;
+          total_weeks: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          type?: "base" | "peak";
+          title?: string;
+          description?: string | null;
+          total_weeks?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      strength_weeks: {
+        Row: {
+          id: string;
+          program_id: string;
+          week_number: number;
+          title: string;
+          content: string;
+        };
+        Insert: {
+          id?: string;
+          program_id: string;
+          week_number: number;
+          title: string;
+          content: string;
+        };
+        Update: {
+          id?: string;
+          program_id?: string;
+          week_number?: number;
+          title?: string;
+          content?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "strength_weeks_program_id_fkey";
+            columns: ["program_id"];
+            referencedRelation: "strength_programs";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      member_peak_start: {
+        Row: {
+          member_id: string;
+          started_at: string;
+        };
+        Insert: {
+          member_id: string;
+          started_at?: string;
+        };
+        Update: {
+          member_id?: string;
+          started_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
