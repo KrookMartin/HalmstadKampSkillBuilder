@@ -12,30 +12,26 @@ export type SessionWithTechniques = {
   techniques: (Technique & { position: number })[];
 };
 
-// Fetches all sessions for a given date (published only for members,
-// all for coaches — RLS enforces this at the DB level).
-export async function getSessionsForDate(
-  date: string
-): Promise<SessionWithTechniques[]> {
-  const supabase = await createClient();
+const SESSION_SELECT = `id, session_date, time_slot, class_type, notes, published, created_by,
+   session_techniques (
+     position,
+     techniques (
+       id, title, category, level, youtube_url, notes, created_by, created_at
+     )
+   )`;
 
-  const { data, error } = await supabase
-    .from("sessions")
-    .select(
-      `id, session_date, time_slot, class_type, notes, published, created_by,
-       session_techniques (
-         position,
-         techniques (
-           id, title, category, level, youtube_url, notes, created_by, created_at
-         )
-       )`
-    )
-    .eq("session_date", date)
-    .order("time_slot");
-
-  if (error) throw new Error(error.message);
-
-  return (data ?? []).map((s) => ({
+// Flattens the nested join into an ordered technique list.
+function toSession(s: {
+  id: string;
+  session_date: string;
+  time_slot: string;
+  class_type: string;
+  notes: string | null;
+  published: boolean;
+  created_by: string;
+  session_techniques: { position: number; techniques: unknown }[] | null;
+}): SessionWithTechniques {
+  return {
     id: s.id,
     session_date: s.session_date,
     time_slot: s.time_slot,
@@ -46,25 +42,39 @@ export async function getSessionsForDate(
     techniques: (s.session_techniques ?? [])
       .sort((a, b) => a.position - b.position)
       .map((st) => ({
-        ...(st.techniques as unknown as Technique),
+        ...(st.techniques as Technique),
         position: st.position,
       })),
-  }));
+  };
 }
 
-// Fetches all sessions for the coach list view (ordered newest first).
-export async function getAllSessions(): Promise<
-  Omit<SessionWithTechniques, "techniques">[]
-> {
+// Fetches all sessions for a given date (published only for members,
+// all for coaches — RLS enforces this at the DB level).
+export async function getSessionsForDate(
+  date: string
+): Promise<SessionWithTechniques[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("sessions")
+    .select(SESSION_SELECT)
+    .eq("session_date", date)
+    .order("time_slot");
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(toSession);
+}
+
+// Fetches all sessions for the coach list view (newest first), including
+// their saved technique order so the builder starts from what's stored.
+export async function getAllSessions(): Promise<SessionWithTechniques[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sessions")
-    .select(
-      "id, session_date, time_slot, class_type, notes, published, created_by"
-    )
+    .select(SESSION_SELECT)
     .order("session_date", { ascending: false })
     .order("time_slot");
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map(toSession);
 }

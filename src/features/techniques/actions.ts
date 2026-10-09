@@ -52,7 +52,7 @@ export async function createTechnique(
     return { success: false, error: "Kunde inte spara tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }
@@ -86,7 +86,7 @@ export async function updateTechnique(
     return { success: false, error: "Kunde inte uppdatera tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }
@@ -103,7 +103,7 @@ export async function deleteTechnique(
     return { success: false, error: "Kunde inte ta bort tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }

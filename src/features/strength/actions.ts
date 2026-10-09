@@ -42,6 +42,7 @@ export async function upsertWeek(
   if (error) return { success: false, error: "Kunde inte spara veckan." };
 
   revalidatePath("/styrka");
+  revalidatePath("/traning/styrka");
   return { success: true };
 }
 
@@ -57,6 +58,7 @@ export async function deleteWeek(weekId: string): Promise<WeekResult> {
   if (error) return { success: false, error: "Kunde inte ta bort veckan." };
 
   revalidatePath("/styrka");
+  revalidatePath("/traning/styrka");
   return { success: true };
 }
 
@@ -85,6 +87,7 @@ export async function startPeakProgram(
   if (error) return { success: false, error: "Kunde inte spara startdatum." };
 
   revalidatePath("/styrka");
+  revalidatePath("/traning/styrka");
   return { success: true };
 }
 
@@ -100,5 +103,6 @@ export async function cancelPeakProgram(): Promise<WeekResult> {
   if (error) return { success: false, error: "Kunde inte avbryta." };
 
   revalidatePath("/styrka");
+  revalidatePath("/traning/styrka");
   return { success: true };
 }

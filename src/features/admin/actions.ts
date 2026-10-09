@@ -34,7 +34,7 @@ export async function updateMemberStatus(
 
   if (error) return { success: false, error: "Kunde inte uppdatera status." };
 
-  revalidatePath("/medlemmar");
+  revalidatePath("/admin/medlemmar");
   return { success: true };
 }
 
@@ -57,6 +57,6 @@ export async function updateMemberRole(
 
   if (error) return { success: false, error: "Kunde inte uppdatera roll." };
 
-  revalidatePath("/medlemmar");
+  revalidatePath("/admin/medlemmar");
   return { success: true };
 }

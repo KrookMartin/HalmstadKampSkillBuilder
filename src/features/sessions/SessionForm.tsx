@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { buttonSecondary, input, label } from "@/components/ui";
+import { toIsoDate } from "@/lib/date";
 import { createSession, updateSession } from "./actions";
 import type { SessionResult } from "./actions";
 
@@ -29,16 +31,11 @@ export function SessionForm({ existing, onSuccess }: SessionFormProps) {
     onSuccess(result.id);
   }
 
-  const today = new Date().toISOString().split("T")[0];
-
   return (
     <form action={dispatch} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label
-            htmlFor="session_date"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="session_date" className={label}>
             Datum
           </label>
           <input
@@ -46,15 +43,12 @@ export function SessionForm({ existing, onSuccess }: SessionFormProps) {
             name="session_date"
             type="date"
             required
-            defaultValue={existing?.session_date ?? today}
-            className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+            defaultValue={existing?.session_date ?? toIsoDate(new Date())}
+            className={input}
           />
         </div>
         <div>
-          <label
-            htmlFor="time_slot"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="time_slot" className={label}>
             Tid
           </label>
           <input
@@ -63,17 +57,13 @@ export function SessionForm({ existing, onSuccess }: SessionFormProps) {
             type="time"
             required
             defaultValue={existing?.time_slot ?? ""}
-            placeholder="18:00"
-            className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+            className={input}
           />
         </div>
       </div>
 
       <div>
-        <label
-          htmlFor="class_type"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="class_type" className={label}>
           Typ av pass
         </label>
         <input
@@ -82,18 +72,14 @@ export function SessionForm({ existing, onSuccess }: SessionFormProps) {
           type="text"
           required
           defaultValue={existing?.class_type ?? ""}
-          placeholder="t.ex. BJJ Avancerat"
-          className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          placeholder="t.ex. BJJ Advanced"
+          className={input}
         />
       </div>
 
       <div>
-        <label
-          htmlFor="notes"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Anteckningar{" "}
-          <span className="font-normal text-gray-400">(valfritt)</span>
+        <label htmlFor="notes" className={label}>
+          Tränarens fokus <span className="font-normal text-muted">(valfritt)</span>
         </label>
         <textarea
           id="notes"
@@ -101,20 +87,21 @@ export function SessionForm({ existing, onSuccess }: SessionFormProps) {
           rows={3}
           defaultValue={existing?.notes ?? ""}
           placeholder="Tema för passet, vad du vill fokusera på…"
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          className={input}
         />
       </div>
 
       {result?.success === false && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-text">
           {result.error}
         </p>
       )}
 
+      {/* Secondary: on the Pass screen "Publicera" is the primary action. */}
       <button
         type="submit"
         disabled={pending}
-        className="flex min-h-[44px] w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-60"
+        className={`${buttonSecondary} min-h-[54px] w-full`}
       >
         {pending ? "Sparar…" : existing ? "Spara ändringar" : "Skapa pass"}
       </button>

@@ -4,6 +4,14 @@ import { useState, useTransition } from "react";
 import { setSessionTechniques } from "./actions";
 import { categoryLabels } from "@/features/techniques/labels";
 import type { Technique } from "@/features/techniques/queries";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CloseIcon,
+  PlusIcon,
+  SearchIcon,
+} from "@/components/icons";
+import { buttonSecondary, iconButton, input, meta } from "@/components/ui";
 
 interface TechniquePickerProps {
   sessionId: string;
@@ -12,49 +20,36 @@ interface TechniquePickerProps {
 }
 
 // Lets a coach build the ordered technique list for a session.
-// Left column = archive to pick from; right column = current session order.
-// Reorder by moving items up/down; remove with ✕.
+// Reorder uses up/down buttons on purpose — drag-and-drop is unreliable
+// on phones (DESIGN.md). Changes are local until "Spara ordning".
 export function TechniquePicker({
   sessionId,
   allTechniques,
   initialSelected,
 }: TechniquePickerProps) {
   const [selected, setSelected] = useState<Technique[]>(initialSelected);
-  const [saved, setSaved] = useState(false);
+  const [query, setQuery] = useState("");
+  const [saved, setSaved] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const selectedIds = new Set(selected.map((t) => t.id));
+  const q = query.trim().toLowerCase();
+  const available = allTechniques.filter(
+    (t) => !selectedIds.has(t.id) && (!q || t.title.toLowerCase().includes(q))
+  );
 
-  function add(technique: Technique) {
-    if (selectedIds.has(technique.id)) return;
-    setSelected((prev) => [...prev, technique]);
+  function change(next: Technique[]) {
+    setSelected(next);
     setSaved(false);
   }
 
-  function remove(id: string) {
-    setSelected((prev) => prev.filter((t) => t.id !== id));
-    setSaved(false);
-  }
-
-  function moveUp(index: number) {
-    if (index === 0) return;
-    setSelected((prev) => {
-      const next = [...prev];
-      [next[index - 1], next[index]] = [next[index], next[index - 1]];
-      return next;
-    });
-    setSaved(false);
-  }
-
-  function moveDown(index: number) {
-    if (index === selected.length - 1) return;
-    setSelected((prev) => {
-      const next = [...prev];
-      [next[index], next[index + 1]] = [next[index + 1], next[index]];
-      return next;
-    });
-    setSaved(false);
+  function move(index: number, delta: -1 | 1) {
+    const target = index + delta;
+    if (target < 0 || target >= selected.length) return;
+    const next = [...selected];
+    [next[index], next[target]] = [next[target], next[index]];
+    change(next);
   }
 
   function save() {
@@ -73,110 +68,126 @@ export function TechniquePicker({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* Archive — pick from here */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">Arkiv</p>
-          <div className="h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
-            {allTechniques.length === 0 && (
-              <p className="p-3 text-sm text-gray-400">
-                Inga tekniker i arkivet än.
-              </p>
-            )}
-            {allTechniques.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => add(t)}
-                disabled={selectedIds.has(t.id)}
-                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 disabled:opacity-40"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate font-medium text-gray-900">
-                    {t.title}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {categoryLabels[t.category]}
-                  </span>
-                </span>
-                {!selectedIds.has(t.id) && (
-                  <span className="shrink-0 text-gray-400">+</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected — session order */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">
-            Dagens pass{" "}
-            <span className="font-normal text-gray-400">
-              ({selected.length} tekniker)
-            </span>
-          </p>
-          <div className="h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
-            {selected.length === 0 && (
-              <p className="p-3 text-sm text-gray-400">
-                Välj tekniker från arkivet.
-              </p>
-            )}
+    <div className="space-y-6">
+      {/* Current order */}
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+          Ordning ({selected.length})
+        </h3>
+        {selected.length === 0 ? (
+          <p className="py-2 text-muted">Lägg till tekniker från arkivet nedan.</p>
+        ) : (
+          <ol className="border-t border-line">
             {selected.map((t, i) => (
-              <div
+              <li
                 key={t.id}
-                className="flex items-center gap-1 px-3 py-2 text-sm"
+                className="flex min-h-[64px] items-center gap-3 border-b border-line py-2"
               >
-                <span className="w-5 shrink-0 text-xs text-gray-400">
-                  {i + 1}.
+                <span className="w-7 shrink-0 font-display text-[30px] font-bold leading-none text-faint">
+                  {i + 1}
                 </span>
-                <span className="min-w-0 flex-1 truncate font-medium text-gray-900">
-                  {t.title}
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{t.title}</span>
+                  <span className={meta}>{categoryLabels[t.category]}</span>
                 </span>
-                <div className="flex shrink-0 gap-1">
+                <span className="flex shrink-0 gap-1">
                   <button
                     type="button"
-                    onClick={() => moveUp(i)}
+                    onClick={() => move(i, -1)}
                     disabled={i === 0}
-                    aria-label="Flytta upp"
-                    className="min-h-[36px] min-w-[36px] rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                    aria-label={`Flytta upp ${t.title}`}
+                    className={iconButton}
                   >
-                    ↑
+                    <ArrowUpIcon className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => moveDown(i)}
+                    onClick={() => move(i, 1)}
                     disabled={i === selected.length - 1}
-                    aria-label="Flytta ner"
-                    className="min-h-[36px] min-w-[36px] rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                    aria-label={`Flytta ner ${t.title}`}
+                    className={iconButton}
                   >
-                    ↓
+                    <ArrowDownIcon className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => remove(t.id)}
-                    aria-label="Ta bort"
-                    className="min-h-[36px] min-w-[36px] rounded text-red-400 hover:text-red-600"
+                    onClick={() =>
+                      change(selected.filter((s) => s.id !== t.id))
+                    }
+                    aria-label={`Ta bort ${t.title}`}
+                    className={`${iconButton} hover:text-red-text`}
                   >
-                    ✕
+                    <CloseIcon className="h-5 w-5" />
                   </button>
-                </div>
-              </div>
+                </span>
+              </li>
             ))}
-          </div>
+          </ol>
+        )}
+
+        {error && (
+          <p role="alert" className="text-sm text-red-text">
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={save}
+          disabled={isPending || saved}
+          className={`${buttonSecondary} w-full`}
+        >
+          {isPending ? "Sparar…" : saved ? "Ordningen är sparad" : "Spara ordning"}
+        </button>
+      </section>
+
+      {/* Archive to add from */}
+      <section className="space-y-3">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+          Lägg till från arkivet
+        </h3>
+        <div className="relative">
+          <label htmlFor={`picker-search-${sessionId}`} className="sr-only">
+            Sök i arkivet
+          </label>
+          <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+          <input
+            id={`picker-search-${sessionId}`}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Sök teknik…"
+            className={`${input} pl-12`}
+          />
         </div>
-      </div>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <button
-        type="button"
-        onClick={save}
-        disabled={isPending || saved}
-        className="flex min-h-[44px] w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-60"
-      >
-        {isPending ? "Sparar…" : saved ? "Sparat ✓" : "Spara ordning"}
-      </button>
+        <ul className="max-h-80 overflow-y-auto border-t border-line">
+          {available.length === 0 && (
+            <li className="py-3 text-muted">
+              {allTechniques.length === 0
+                ? "Inga tekniker i arkivet än."
+                : "Inga fler tekniker att lägga till."}
+            </li>
+          )}
+          {available.map((t) => (
+            <li
+              key={t.id}
+              className="flex min-h-[64px] items-center gap-3 border-b border-line py-2"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold">{t.title}</span>
+                <span className={meta}>{categoryLabels[t.category]}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => change([...selected, t])}
+                aria-label={`Lägg till ${t.title}`}
+                className={iconButton}
+              >
+                <PlusIcon className="h-5 w-5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

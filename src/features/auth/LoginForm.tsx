@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { buttonPrimary, card, input, label } from "@/components/ui";
 import { sendMagicLink, type LoginResult } from "./actions";
 
 const initialState: LoginResult | null = null;
@@ -14,11 +15,11 @@ export function LoginForm() {
 
   if (result?.success) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-        <p className="font-medium">Kolla din e-post!</p>
-        <p className="mt-1 text-green-700">
-          Vi har skickat en inloggningslänk till dig. Länken är giltig i
-          60 minuter.
+      <div role="status" className={`${card} space-y-1`}>
+        <p className="font-semibold">Kolla din e-post!</p>
+        <p className="text-text-soft">
+          Vi har skickat en inloggningslänk till dig. Länken är giltig i 60
+          minuter.
         </p>
       </div>
     );
@@ -27,10 +28,7 @@ export function LoginForm() {
   return (
     <form action={action} className="space-y-4">
       <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="email" className={label}>
           E-postadress
         </label>
         <input
@@ -40,21 +38,17 @@ export function LoginForm() {
           autoComplete="email"
           required
           placeholder="namn@exempel.se"
-          className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          className={input}
         />
       </div>
 
       {result?.success === false && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-text">
           {result.error}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex min-h-[44px] w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={buttonPrimary}>
         {pending ? "Skickar…" : "Skicka inloggningslänk"}
       </button>
     </form>

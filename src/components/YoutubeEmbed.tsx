@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { buildEmbedUrl, parseYoutubeUrl } from "@/lib/youtube";
+import { ExternalIcon, WarningIcon } from "./icons";
 
 interface YoutubeEmbedProps {
   url: string;
@@ -15,25 +16,26 @@ export function YoutubeEmbed({ url, title }: YoutubeEmbedProps) {
   const parsed = parseYoutubeUrl(url);
 
   if (!parsed || failed) {
+    // Same 16:9 box as the player so the layout doesn't jump.
     return (
-      <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-gray-100 text-center text-sm text-gray-500">
-        <div className="space-y-1 px-4">
-          <p className="font-medium">Videon går inte att spela</p>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-gray-700"
-          >
-            Öppna på YouTube
-          </a>
-        </div>
+      <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-card border border-line bg-surface px-6 text-center">
+        <WarningIcon className="h-8 w-8 text-red-text" />
+        <p className="font-semibold">Videon går inte att spela</p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-red-text underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-red-text"
+        >
+          Öppna på YouTube
+          <ExternalIcon className="h-4 w-4" />
+        </a>
       </div>
     );
   }
 
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
+    <div className="aspect-video w-full overflow-hidden rounded-card bg-black">
       <iframe
         src={buildEmbedUrl(parsed)}
         title={title}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
+import { buttonPrimary, input, label } from "@/components/ui";
 import { createTechnique, updateTechnique } from "./actions";
 import type { TechniqueFormResult } from "./actions";
 import type { Technique } from "./queries";
@@ -14,6 +15,11 @@ interface TechniqueFormProps {
 // Single form used for both create and edit.
 // When `existing` is provided it binds the update action to that id.
 export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
+  // The create form and an edit form can be on screen together, so
+  // input ids must be unique per form instance for <label htmlFor>.
+  const uid = useId();
+  const id = (name: string) => `${uid}-${name}`;
+
   const action = existing
     ? (_prev: TechniqueFormResult | null, fd: FormData) =>
         updateTechnique(existing.id, fd)
@@ -29,56 +35,56 @@ export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
   return (
     <form action={dispatch} className="space-y-4">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id("title")} className={label}>
           Namn
         </label>
         <input
-          id="title"
+          id={id("title")}
           name="title"
           type="text"
           required
           defaultValue={existing?.title}
-          placeholder="t.ex. Armhävstång från guard"
-          className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          placeholder="t.ex. Armbar från closed guard"
+          className={input}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            Kategori
+          <label htmlFor={id("category")} className={label}>
+            Position
           </label>
           <select
-            id="category"
+            id={id("category")}
             name="category"
             required
-            defaultValue={existing?.category}
-            className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+            defaultValue={existing?.category ?? ""}
+            className={input}
           >
             <option value="">Välj…</option>
-            {categories.map(([value, label]) => (
+            {categories.map(([value, text]) => (
               <option key={value} value={value}>
-                {label}
+                {text}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor="level" className="block text-sm font-medium text-gray-700">
+          <label htmlFor={id("level")} className={label}>
             Nivå
           </label>
           <select
-            id="level"
+            id={id("level")}
             name="level"
             required
-            defaultValue={existing?.level}
-            className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+            defaultValue={existing?.level ?? ""}
+            className={input}
           >
             <option value="">Välj…</option>
-            {levels.map(([value, label]) => (
+            {levels.map(([value, text]) => (
               <option key={value} value={value}>
-                {label}
+                {text}
               </option>
             ))}
           </select>
@@ -86,45 +92,41 @@ export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
       </div>
 
       <div>
-        <label htmlFor="youtube_url" className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id("youtube_url")} className={label}>
           YouTube-länk
         </label>
         <input
-          id="youtube_url"
+          id={id("youtube_url")}
           name="youtube_url"
           type="url"
           required
           defaultValue={existing?.youtube_url}
           placeholder="https://youtu.be/..."
-          className="mt-1 block w-full min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          className={input}
         />
       </div>
 
       <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-          Anteckningar <span className="font-normal text-gray-400">(valfritt)</span>
+        <label htmlFor={id("notes")} className={label}>
+          Att tänka på <span className="font-normal text-muted">(valfritt)</span>
         </label>
         <textarea
-          id="notes"
+          id={id("notes")}
           name="notes"
           rows={3}
           defaultValue={existing?.notes ?? ""}
           placeholder="Nyckeldetaljer, vanliga misstag…"
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50"
+          className={input}
         />
       </div>
 
       {result?.success === false && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-text">
           {result.error}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex min-h-[44px] w-full items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={buttonPrimary}>
         {pending ? "Sparar…" : existing ? "Spara ändringar" : "Lägg till teknik"}
       </button>
     </form>

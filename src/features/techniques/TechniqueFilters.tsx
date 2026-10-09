@@ -2,16 +2,19 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTransition } from "react";
-import { categories, levels } from "./labels";
+import { SearchIcon } from "@/components/icons";
+import { chip, input } from "@/components/ui";
+import { categories } from "./labels";
 
-// Filter bar that updates URL search params so filters survive page refresh
-// and are shareable. Uses the router instead of form submission so there's
-// no full page reload on mobile.
+// Search + position (category) filter. State lives in the URL so filters
+// survive refresh and the back button. Uses the router instead of form
+// submission so there's no full page reload on mobile.
 export function TechniqueFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [, startTransition] = useTransition();
+  const activeCategory = params.get("category") ?? "";
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -21,48 +24,53 @@ export function TechniqueFilters() {
       next.delete(key);
     }
     startTransition(() => {
-      router.replace(`${pathname}?${next.toString()}`);
+      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     });
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <select
-        value={params.get("category") ?? ""}
-        onChange={(e) => update("category", e.target.value)}
-        className="min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-        aria-label="Filtrera kategori"
+    <div className="space-y-4">
+      <div className="relative">
+        <label htmlFor="technique-search" className="sr-only">
+          Sök teknik
+        </label>
+        <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+        <input
+          id="technique-search"
+          type="search"
+          defaultValue={params.get("search") ?? ""}
+          onChange={(e) => update("search", e.target.value)}
+          placeholder="Sök teknik…"
+          className={`${input} pl-12`}
+        />
+      </div>
+
+      {/* Horizontal scroll on narrow screens instead of wrapping to 3 rows. */}
+      <div
+        role="group"
+        aria-label="Filtrera på position"
+        className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1"
       >
-        <option value="">Alla kategorier</option>
+        <button
+          type="button"
+          aria-pressed={activeCategory === ""}
+          onClick={() => update("category", "")}
+          className={chip(activeCategory === "")}
+        >
+          Alla
+        </button>
         {categories.map(([value, label]) => (
-          <option key={value} value={value}>
+          <button
+            key={value}
+            type="button"
+            aria-pressed={activeCategory === value}
+            onClick={() => update("category", value)}
+            className={chip(activeCategory === value)}
+          >
             {label}
-          </option>
+          </button>
         ))}
-      </select>
-
-      <select
-        value={params.get("level") ?? ""}
-        onChange={(e) => update("level", e.target.value)}
-        className="min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-        aria-label="Filtrera nivå"
-      >
-        <option value="">Alla nivåer</option>
-        {levels.map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-
-      <input
-        type="search"
-        value={params.get("search") ?? ""}
-        onChange={(e) => update("search", e.target.value)}
-        placeholder="Sök teknik…"
-        className="min-h-[44px] min-w-[160px] flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-        aria-label="Sök teknik"
-      />
+      </div>
     </div>
   );
 }

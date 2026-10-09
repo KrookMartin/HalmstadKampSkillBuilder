@@ -45,7 +45,7 @@ export async function createSession(
     return { success: false, error: "Kunde inte skapa passet." };
   }
 
-  revalidatePath("/pass");
+  revalidatePath("/traning/pass");
   revalidatePath("/idag");
   return { success: true, id: data.id };
 }
@@ -75,7 +75,7 @@ export async function updateSession(
 
   if (error) return { success: false, error: "Kunde inte uppdatera passet." };
 
-  revalidatePath("/pass");
+  revalidatePath("/traning/pass");
   revalidatePath("/idag");
   return { success: true, id };
 }
@@ -94,7 +94,7 @@ export async function publishSession(
 
   if (error) return { success: false, error: "Kunde inte ändra status." };
 
-  revalidatePath("/pass");
+  revalidatePath("/traning/pass");
   revalidatePath("/idag");
   return { success: true };
 }
@@ -109,7 +109,7 @@ export async function deleteSession(
 
   if (error) return { success: false, error: "Kunde inte ta bort passet." };
 
-  revalidatePath("/pass");
+  revalidatePath("/traning/pass");
   revalidatePath("/idag");
   return { success: true };
 }
@@ -133,7 +133,7 @@ export async function setSessionTechniques(
   if (delError) return { success: false, error: "Kunde inte uppdatera passet." };
 
   if (techniqueIds.length === 0) {
-    revalidatePath("/pass");
+    revalidatePath("/traning/pass");
     revalidatePath("/idag");
     return { success: true };
   }
@@ -150,7 +150,7 @@ export async function setSessionTechniques(
 
   if (insError) return { success: false, error: "Kunde inte spara ordningen." };
 
-  revalidatePath("/pass");
+  revalidatePath("/traning/pass");
   revalidatePath("/idag");
   return { success: true };
 }

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Runs on every request. Its only job is to refresh the Supabase session
 // cookie so it doesn't expire mid-visit. Auth guards live in layouts.
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

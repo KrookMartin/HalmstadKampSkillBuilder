@@ -35,16 +35,16 @@ Kod, variabelnamn, tabeller och kommentarer skrivs på engelska.
 src/
   app/
     (auth)/login/          # magic link-inloggning
-    (member)/              # medlemsvyer
+    (app)/                 # inloggade vyer; layout = skal (header + bottom nav)
       idag/                # dagens pass
-      tekniker/            # sök/bläddra i arkivet (läsa)
+      tekniker/            # sök/bläddra i arkivet (läsa), [id] = teknik + video
       styrka/              # S&C-program
-    (coach)/               # tränarvyer, kräver roll coach/admin
-      arkiv/               # skapa/redigera tekniker
-      pass/                # bygg och publicera pass
-      styrka/              # redigera S&C-program
-    (admin)/medlemmar/     # godkänn/inaktivera medlemmar
-  components/              # delade UI-komponenter
+      traning/             # tränarvyer, kräver roll coach/admin (layout + sida)
+        arkiv/             # skapa/redigera tekniker  → /traning/arkiv
+        pass/              # bygg och publicera pass  → /traning/pass
+        styrka/            # redigera S&C-program     → /traning/styrka
+      admin/medlemmar/     # godkänn/inaktivera medlemmar
+  components/              # delade UI-komponenter (ui.ts = knapp/input-klasser)
   lib/
     supabase/              # klienter (server/browser), genererade typer
     youtube.ts             # parse av länk -> video-ID + starttid
