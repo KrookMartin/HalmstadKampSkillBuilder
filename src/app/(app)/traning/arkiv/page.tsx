@@ -5,7 +5,7 @@ import { TechniqueCard } from "@/features/techniques/TechniqueCard";
 import { TechniqueForm } from "@/features/techniques/TechniqueForm";
 import { TechniqueFilters } from "@/features/techniques/TechniqueFilters";
 import { PlusIcon } from "@/components/icons";
-import type { TechniqueCategory } from "@/lib/supabase/types";
+import type { TechniqueCategory } from "@/lib/supabase/enums";
 
 interface PageProps {
   searchParams: Promise<{

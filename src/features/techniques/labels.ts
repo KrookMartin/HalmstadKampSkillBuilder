@@ -1,4 +1,4 @@
-import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/types";
+import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/enums";
 
 export const categoryLabels: Record<TechniqueCategory, string> = {
   guards: "Guards",

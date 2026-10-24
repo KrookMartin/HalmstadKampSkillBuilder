@@ -5,7 +5,7 @@ import { TechniqueFilters } from "@/features/techniques/TechniqueFilters";
 import { categoryLabels, levelLabels } from "@/features/techniques/labels";
 import { ChevronRightIcon } from "@/components/icons";
 import { listRow, meta } from "@/components/ui";
-import type { TechniqueCategory } from "@/lib/supabase/types";
+import type { TechniqueCategory } from "@/lib/supabase/enums";
 
 interface PageProps {
   searchParams: Promise<{
