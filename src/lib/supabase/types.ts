@@ -277,7 +277,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: { roles: Database["public"]["Enums"]["user_role"][] }
+        Returns: boolean
+      }
+      is_active: { Args: never; Returns: boolean }
     }
     Enums: {
       program_type: "base" | "peak"
