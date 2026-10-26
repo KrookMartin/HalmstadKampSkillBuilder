@@ -128,7 +128,7 @@ export function SessionEditor({ existing, allTechniques }: SessionEditorProps) {
       )}
       {result?.success && (
         <p role="status" className="text-sm text-text-soft">
-          {existing ? "Passet är sparat." : "Passet är skapat – du hittar det i listan nedan."}
+          {existing ? "Passet är sparat." : "Passet är skapat."}
         </p>
       )}
 

@@ -11,17 +11,24 @@ interface PageProps {
   searchParams: Promise<{ fran?: string }>;
 }
 
-// "Teknik och video". Opened from both Idag and Tekniker; `?fran=idag`
-// tells the back link where to return to.
+// Session ids from `?fran=pass-<uuid>`; strict so the back link can only
+// ever point inside the app.
+const FROM_PASS = /^pass-([0-9a-f-]{36})$/;
+
+// "Teknik och video". Opened from Idag, a pass page or Tekniker;
+// `?fran=idag` / `?fran=pass-<id>` tells the back link where to return to.
 export default async function TeknikPage({ params, searchParams }: PageProps) {
   const [{ id }, { fran }] = await Promise.all([params, searchParams]);
   const technique = await getTechniqueById(id);
   if (!technique) notFound();
 
+  const passId = fran?.match(FROM_PASS)?.[1];
   const back =
     fran === "idag"
       ? { href: "/idag", label: "Idag" }
-      : { href: "/tekniker", label: "Tekniker" };
+      : passId
+        ? { href: `/pass/${passId}`, label: "Passet" }
+        : { href: "/tekniker", label: "Tekniker" };
 
   return (
     <div className="space-y-6">

@@ -65,16 +65,43 @@ export async function getSessionsForDate(
   return (data ?? []).map(toSession);
 }
 
-// Fetches all sessions for the coach list view (newest first), including
-// their saved technique order so the builder starts from what's stored.
-export async function getAllSessions(): Promise<SessionWithTechniques[]> {
+// Fetches the sessions in a date range (inclusive), e.g. one week, in
+// display order. Members only get published ones (RLS).
+export async function getSessionsInRange(
+  from: string,
+  to: string
+): Promise<SessionWithTechniques[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sessions")
     .select(SESSION_SELECT)
-    .order("session_date", { ascending: false })
+    .gte("session_date", from)
+    .lte("session_date", to)
+    .order("session_date")
     .order("time_slot");
 
   if (error) throw new Error(error.message);
   return (data ?? []).map(toSession);
+}
+
+// Just the dates of all sessions, for the "Hoppa till månad" list.
+// One small column per row, so this stays cheap as the archive grows.
+export async function getSessionDates(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("sessions").select("session_date");
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.session_date);
+}
+
+export async function getSessionById(
+  id: string
+): Promise<SessionWithTechniques | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("sessions")
+    .select(SESSION_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+  return data ? toSession(data) : null;
 }

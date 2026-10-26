@@ -1,22 +1,33 @@
 import { requireRole } from "@/lib/auth";
-import { getAllSessions } from "@/features/sessions/queries";
+import { getSessionDates, getSessionsInRange } from "@/features/sessions/queries";
 import { getTechniques } from "@/features/techniques/queries";
 import { SessionEditor } from "@/features/sessions/SessionEditor";
 import { PublishToggle } from "@/features/sessions/PublishToggle";
+import { WeekNav } from "@/features/sessions/WeekNav";
 import { ChevronRightIcon, PlusIcon } from "@/components/icons";
 import { tag } from "@/components/ui";
 import { formatDayLabel } from "@/lib/date";
+import { todayIso } from "@/lib/today";
+import { addDays, groupByMonth, parseWeekParam } from "@/lib/week";
+
+interface PageProps {
+  searchParams: Promise<{ vecka?: string }>;
+}
 
 // Passbyggare.
-// Each session is a <details> so the list stays short on a phone and the
-// coach expands only the one they're building.
-export default async function PassCoachPage() {
+// Shows one week at a time (?vecka=<monday>) so the list stays short as the
+// archive grows. Each session is a <details> so the coach expands only the
+// one they're building.
+export default async function PassCoachPage({ searchParams }: PageProps) {
   // Also checked in traning/layout.tsx; layouts don't always re-run on
   // client navigation, so pages check too.
   await requireRole(["coach", "admin"]);
-  const [sessions, allTechniques] = await Promise.all([
-    getAllSessions(),
+  const [{ vecka }, today] = await Promise.all([searchParams, todayIso()]);
+  const monday = parseWeekParam(vecka, today);
+  const [sessions, allTechniques, dates] = await Promise.all([
+    getSessionsInRange(monday, addDays(monday, 6)),
     getTechniques(),
+    getSessionDates(),
   ]);
 
   return (
@@ -36,8 +47,15 @@ export default async function PassCoachPage() {
         </div>
       </details>
 
+      <WeekNav
+        monday={monday}
+        today={today}
+        basePath="/traning/pass"
+        months={groupByMonth(dates)}
+      />
+
       {sessions.length === 0 ? (
-        <p className="text-muted">Inga pass skapade än.</p>
+        <p className="text-muted">Inga pass den här veckan.</p>
       ) : (
         <ul className="border-t border-line">
           {sessions.map((s) => (
