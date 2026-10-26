@@ -21,7 +21,7 @@ export default function DemoArkivPage() {
                 <option>Passering</option>
                 <option>Nedtagningar</option>
                 <option>Överkroppsgrepp</option>
-                <option>Benkroppsgrepp</option>
+                <option>Leglocks</option>
                 <option>Svep</option>
               </select>
             </div>

@@ -15,7 +15,7 @@ const techniques = [
 
 const catLabels: Record<string, string> = {
   guards: "Guards", passing: "Passering", takedowns: "Nedtagningar",
-  upper_body_submissions: "Överkroppsgrepp", lower_body_submissions: "Benkroppsgrepp", sweeps: "Svep",
+  upper_body_submissions: "Överkroppsgrepp", lower_body_submissions: "Leglocks", sweeps: "Svep",
 };
 const lvlLabels: Record<string, string> = {
   beginner: "Nybörjare", intermediate: "Medel", advanced: "Avancerad",

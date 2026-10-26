@@ -5,7 +5,7 @@ export const categoryLabels: Record<TechniqueCategory, string> = {
   passing: "Passering",
   takedowns: "Nedtagningar",
   upper_body_submissions: "Överkroppsgrepp",
-  lower_body_submissions: "Benkroppsgrepp",
+  lower_body_submissions: "Leglocks",
   sweeps: "Svep",
 };
 
