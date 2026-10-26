@@ -9,28 +9,34 @@ import { categories, levels } from "./labels";
 
 interface TechniqueFormProps {
   existing?: Technique;
-  onSuccess?: () => void;
+  // Gets the new technique on create (undefined on edit).
+  onSuccess?: (technique?: Technique) => void;
+  submitLabel?: string;
 }
 
 // Single form used for both create and edit.
 // When `existing` is provided it binds the update action to that id.
-export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
+export function TechniqueForm({
+  existing,
+  onSuccess,
+  submitLabel = "Lägg till teknik",
+}: TechniqueFormProps) {
   // The create form and an edit form can be on screen together, so
   // input ids must be unique per form instance for <label htmlFor>.
   const uid = useId();
   const id = (name: string) => `${uid}-${name}`;
 
-  const action = existing
-    ? (_prev: TechniqueFormResult | null, fd: FormData) =>
-        updateTechnique(existing.id, fd)
-    : (_prev: TechniqueFormResult | null, fd: FormData) =>
-        createTechnique(fd);
-
-  const [result, dispatch, pending] = useActionState(action, null);
-
-  if (result?.success && onSuccess) {
-    onSuccess();
-  }
+  // onSuccess runs here, once per save, rather than during render.
+  const [result, dispatch, pending] = useActionState(
+    async (_prev: TechniqueFormResult | null, fd: FormData) => {
+      const res = existing
+        ? await updateTechnique(existing.id, fd)
+        : await createTechnique(fd);
+      if (res.success) onSuccess?.(res.technique);
+      return res;
+    },
+    null
+  );
 
   return (
     <form action={dispatch} className="space-y-4">
@@ -108,7 +114,8 @@ export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
 
       <div>
         <label htmlFor={id("notes")} className={label}>
-          Att tänka på <span className="font-normal text-muted">(valfritt)</span>
+          Att tänka på{" "}
+          <span className="font-normal text-muted">(valfritt)</span>
         </label>
         <textarea
           id={id("notes")}
@@ -127,7 +134,7 @@ export function TechniqueForm({ existing, onSuccess }: TechniqueFormProps) {
       )}
 
       <button type="submit" disabled={pending} className={buttonPrimary}>
-        {pending ? "Sparar…" : existing ? "Spara ändringar" : "Lägg till teknik"}
+        {pending ? "Sparar…" : existing ? "Spara ändringar" : submitLabel}
       </button>
     </form>
   );

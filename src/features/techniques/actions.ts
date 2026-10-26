@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/enums";
+import type { Technique } from "./queries";
 
 const techniqueSchema = z.object({
   title: z.string().min(2, "Titeln måste vara minst 2 tecken"),
@@ -21,9 +22,10 @@ const techniqueSchema = z.object({
   notes: z.string().optional(),
 });
 
+// `technique` is set on create, so the pass builder can add the new
+// technique to the pass it's building.
 export type TechniqueFormResult =
-  | { success: true }
-  | { success: false; error: string };
+  { success: true; technique?: Technique } | { success: false; error: string };
 
 export async function createTechnique(
   formData: FormData
@@ -43,18 +45,22 @@ export async function createTechnique(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("techniques").insert({
-    ...parsed.data,
-    created_by: profile.id,
-  });
+  const { data, error } = await supabase
+    .from("techniques")
+    .insert({ ...parsed.data, created_by: profile.id })
+    .select(
+      "id, title, category, level, youtube_url, notes, created_by, created_at"
+    )
+    .single();
 
   if (error) {
     return { success: false, error: "Kunde inte spara tekniken." };
   }
 
   revalidatePath("/traning/arkiv");
+  revalidatePath("/traning/pass");
   revalidatePath("/tekniker");
-  return { success: true };
+  return { success: true, technique: data as Technique };
 }
 
 export async function updateTechnique(
@@ -79,7 +85,15 @@ export async function updateTechnique(
   // RLS policy allows coaches to only update their own techniques.
   const { error } = await supabase
     .from("techniques")
-    .update(parsed.data as { title: string; category: TechniqueCategory; level: TechniqueLevel; youtube_url: string; notes?: string })
+    .update(
+      parsed.data as {
+        title: string;
+        category: TechniqueCategory;
+        level: TechniqueLevel;
+        youtube_url: string;
+        notes?: string;
+      }
+    )
     .eq("id", id);
 
   if (error) {
