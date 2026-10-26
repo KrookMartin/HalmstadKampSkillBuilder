@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/types";
+import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/enums";
 
 const techniqueSchema = z.object({
   title: z.string().min(2, "Titeln måste vara minst 2 tecken"),
@@ -52,7 +52,7 @@ export async function createTechnique(
     return { success: false, error: "Kunde inte spara tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }
@@ -86,7 +86,7 @@ export async function updateTechnique(
     return { success: false, error: "Kunde inte uppdatera tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }
@@ -103,7 +103,7 @@ export async function deleteTechnique(
     return { success: false, error: "Kunde inte ta bort tekniken." };
   }
 
-  revalidatePath("/arkiv");
+  revalidatePath("/traning/arkiv");
   revalidatePath("/tekniker");
   return { success: true };
 }

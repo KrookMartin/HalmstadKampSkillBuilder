@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/types";
+import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/enums";
 
 export type Technique = {
   id: string;

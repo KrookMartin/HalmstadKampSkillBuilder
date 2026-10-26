@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { YoutubeEmbed } from "@/components/YoutubeEmbed";
+import { ChevronRightIcon } from "@/components/icons";
+import { buttonDanger, buttonSecondary, meta } from "@/components/ui";
 import { TechniqueForm } from "./TechniqueForm";
 import { deleteTechnique } from "./actions";
 import { categoryLabels, levelLabels } from "./labels";
@@ -9,65 +11,76 @@ import type { Technique } from "./queries";
 
 interface TechniqueCardProps {
   technique: Technique;
-  canEdit?: boolean;
 }
 
-export function TechniqueCard({ technique, canEdit = false }: TechniqueCardProps) {
+// Coach archive row. Tap to expand: video preview + edit/delete.
+// (Members use the /tekniker/[id] page instead.)
+export function TechniqueCard({ technique }: TechniqueCardProps) {
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      {/* Header — always visible */}
+    <article className="border-b border-line">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
         aria-expanded={expanded}
+        className="flex min-h-[72px] w-full items-center gap-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-red-text"
       >
-        <div className="min-w-0">
-          <p className="truncate font-medium text-gray-900">{technique.title}</p>
-          <p className="mt-0.5 text-xs text-gray-500">
-            {categoryLabels[technique.category]} · {levelLabels[technique.level]}
-          </p>
-        </div>
-        <span className="shrink-0 text-gray-400" aria-hidden>
-          {expanded ? "▲" : "▼"}
+        <span className="min-w-0 flex-1">
+          <span className="block text-[17px] font-semibold">
+            {technique.title}
+          </span>
+          <span className={meta}>
+            {categoryLabels[technique.category]} ·{" "}
+            {levelLabels[technique.level]}
+          </span>
         </span>
+        <ChevronRightIcon
+          className={`h-6 w-6 shrink-0 text-muted transition-transform ${
+            expanded ? "rotate-90" : ""
+          }`}
+        />
       </button>
 
-      {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-gray-100 px-4 pb-4 pt-3 space-y-3">
-          {!editing && (
+        <div className="space-y-4 pb-6 pt-1">
+          {editing ? (
             <>
-              <YoutubeEmbed url={technique.youtube_url} title={technique.title} />
+              <TechniqueForm
+                existing={technique}
+                onSuccess={() => setEditing(false)}
+              />
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className={`${buttonSecondary} w-full`}
+              >
+                Avbryt
+              </button>
+            </>
+          ) : (
+            <>
+              <YoutubeEmbed
+                url={technique.youtube_url}
+                title={technique.title}
+              />
               {technique.notes && (
-                <p className="text-sm text-gray-600 whitespace-pre-line">
+                <p className="whitespace-pre-line text-text-soft">
                   {technique.notes}
                 </p>
               )}
-
-              {canEdit && (
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(true)}
-                    className="min-h-[44px] flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
-                  >
-                    Redigera
-                  </button>
-                  <DeleteButton id={technique.id} />
-                </div>
-              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className={`${buttonSecondary} flex-1`}
+                >
+                  Redigera
+                </button>
+                <DeleteButton id={technique.id} />
+              </div>
             </>
-          )}
-
-          {editing && (
-            <TechniqueForm
-              existing={technique}
-              onSuccess={() => setEditing(false)}
-            />
           )}
         </div>
       )}
@@ -75,6 +88,7 @@ export function TechniqueCard({ technique, canEdit = false }: TechniqueCardProps
   );
 }
 
+// Two-step delete so a mis-tap on a phone doesn't remove a technique.
 function DeleteButton({ id }: { id: string }) {
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
@@ -87,19 +101,19 @@ function DeleteButton({ id }: { id: string }) {
 
   if (confirming) {
     return (
-      <div className="flex gap-2 flex-1">
+      <div className="flex flex-1 gap-2">
         <button
           type="button"
           onClick={handleDelete}
           disabled={pending}
-          className="min-h-[44px] flex-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+          className={`${buttonDanger} flex-1`}
         >
-          {pending ? "Tar bort…" : "Bekräfta"}
+          {pending ? "Tar bort…" : "Ja, ta bort"}
         </button>
         <button
           type="button"
           onClick={() => setConfirming(false)}
-          className="min-h-[44px] rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+          className={buttonSecondary}
         >
           Avbryt
         </button>
@@ -111,7 +125,7 @@ function DeleteButton({ id }: { id: string }) {
     <button
       type="button"
       onClick={() => setConfirming(true)}
-      className="min-h-[44px] rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+      className={buttonDanger}
     >
       Ta bort
     </button>

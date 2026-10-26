@@ -1,11 +1,11 @@
-import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/types";
+import type { TechniqueCategory, TechniqueLevel } from "@/lib/supabase/enums";
 
 export const categoryLabels: Record<TechniqueCategory, string> = {
   guards: "Guards",
   passing: "Passering",
   takedowns: "Nedtagningar",
   upper_body_submissions: "Överkroppsgrepp",
-  lower_body_submissions: "Benkroppsgrepp",
+  lower_body_submissions: "Leglocks",
   sweeps: "Svep",
 };
 

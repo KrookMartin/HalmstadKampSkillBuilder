@@ -24,7 +24,7 @@ Kod, variabelnamn, tabeller och kommentarer skrivs på engelska.
 ## Stack
 
 - Next.js (App Router) + TypeScript (strict)
-- Supabase: Postgres, Auth (magic link), Row Level Security
+- Supabase: Postgres, Auth (e-post + lösenord, bara tränare), Row Level Security
 - Tailwind CSS
 - Hosting: Vercel
 - Tester: Vitest för logik, Playwright för 2–3 kritiska flöden
@@ -34,17 +34,17 @@ Kod, variabelnamn, tabeller och kommentarer skrivs på engelska.
 ```
 src/
   app/
-    (auth)/login/          # magic link-inloggning
-    (member)/              # medlemsvyer
+    (auth)/login/          # tränarinloggning (e-post + lösenord)
+    (app)/                 # inloggade vyer; layout = skal (header + bottom nav)
       idag/                # dagens pass
-      tekniker/            # sök/bläddra i arkivet (läsa)
+      tekniker/            # sök/bläddra i arkivet (läsa), [id] = teknik + video
       styrka/              # S&C-program
-    (coach)/               # tränarvyer, kräver roll coach/admin
-      arkiv/               # skapa/redigera tekniker
-      pass/                # bygg och publicera pass
-      styrka/              # redigera S&C-program
-    (admin)/medlemmar/     # godkänn/inaktivera medlemmar
-  components/              # delade UI-komponenter
+      traning/             # tränarvyer, kräver roll coach/admin (layout + sida)
+        arkiv/             # skapa/redigera tekniker  → /traning/arkiv
+        pass/              # bygg och publicera pass  → /traning/pass
+        styrka/            # redigera S&C-program     → /traning/styrka
+      admin/konton/        # aktivera/inaktivera tränarkonton, sätt roll
+  components/              # delade UI-komponenter (ui.ts = knapp/input-klasser)
   lib/
     supabase/              # klienter (server/browser), genererade typer
     youtube.ts             # parse av länk -> video-ID + starttid
@@ -74,20 +74,28 @@ Håll feature-logik i `src/features/<namn>/`. Sidor i `app/` ska vara tunna.
 - Lägg inte till beroenden utan att fråga.
 - Ändra aldrig en gammal migration. Skapa en ny.
 - Spara aldrig hemligheter i repot. Använd `.env.local` och uppdatera `.env.example`.
-- Spara så lite persondata som möjligt (namn + e-post). Inga hälsouppgifter.
+- Spara så lite persondata som möjligt: inga medlemsdata alls, bara tränares namn + e-post.
+  Inga hälsouppgifter.
 - Skriv tester för `youtube.ts` och för logiken som räknar ut aktuell vecka i toppningsprogram.
 
 ## Domänregler
 
-- Roller: `member`, `coach`, `admin`. Nya användare får status `pending` och ser inget
-  innehåll förrän en admin sätter `active`. Användare registrerar sig själva via magic link.
+- Medlemmar loggar inte in. Publicerat innehåll (tekniker, publicerade pass, S&C) är
+  öppet för alla med länken (`anon` i RLS). Sajten är `noindex`.
+- Bara tränare/admin har konton (roller `coach`, `admin`). En admin skapar kontot i
+  Supabase-dashboarden (Add user + Auto Confirm); det får status `pending` och aktiveras
+  i appen under /admin/konton. Självregistrering är avstängd i Supabase. Appen skickar
+  inga mejl.
+- RLS: skrivrättigheter kontrolleras med `has_role(...)` (security definer). Läs aldrig
+  från `profiles` direkt i en policy – det ger oändlig rekursion.
 - Medlemmar ser bara **publicerade** pass.
 - Ett pass har ett datum, ett tidsslag (t.ex. "18:00") och en typtext (t.ex. "BJJ Advanced").
   Flera pass kan finnas samma dag. Varje pass har ett fritextfält för tränarens anteckningar
   samt en ordnad lista med YouTube-klipp hämtade från teknikarkivet.
 - Teknikarkivet kategoriseras med dessa fasta kategorier (ingen disciplin-tagg):
   Guards, Passing, Takedowns, Upper Body Submissions, Lower Body Submissions, Sweeps.
-- S&C: ett `base`-program (6–8 veckor, loopar om) visas för alla aktiva medlemmar.
+- S&C: ett `base`-program (6–8 veckor, loopar om) visas för alla.
   Ett `peak`-program (tävlingsförberedelse) kan hoppas på oavsett var i grundprogrammet
-  man befinner sig. Peak ersätter inte base-visningen — de visas separat.
+  man befinner sig. Startdatumet sparas i medlemmens webbläsare (localStorage).
+  Peak ersätter inte base-visningen — de visas separat.
 - YouTube-länkar kan dö. Visa en tydlig reservvy om en video inte går att spela.

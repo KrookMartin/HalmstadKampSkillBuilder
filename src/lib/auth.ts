@@ -12,21 +12,29 @@ export interface Profile {
   status: Status;
 }
 
-// Call from Server Components / Server Actions to get the current user's profile.
-// Redirects to /login if not authenticated or not active.
-export async function requireActiveProfile(): Promise<Profile> {
+// Only coaches/admins have accounts; members use the app without logging in.
+
+// The logged-in user's profile, or null for anonymous visitors. No redirects,
+// so public pages can use it to decide whether to show coach links.
+export async function getProfile(): Promise<Profile | null> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+  if (!user) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
+  return (profile as Profile | null) ?? null;
+}
+
+// For coach/admin pages and Server Actions.
+// Redirects to /login if not authenticated, /vantar if not yet activated.
+export async function requireActiveProfile(): Promise<Profile> {
+  const profile = await getProfile();
 
   if (!profile) redirect("/login");
   if (profile.status === "pending") redirect("/vantar");

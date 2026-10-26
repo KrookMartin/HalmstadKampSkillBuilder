@@ -40,16 +40,3 @@ export async function getProgramWeeks(
   if (error) throw new Error(error.message);
   return data ?? [];
 }
-
-// Returns the date the member chose to start the peak program, or null.
-export async function getMemberPeakStart(
-  memberId: string
-): Promise<string | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("member_peak_start")
-    .select("started_at")
-    .eq("member_id", memberId)
-    .single();
-  return data?.started_at ?? null;
-}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { buttonPrimary, buttonSecondary } from "@/components/ui";
 import { publishSession } from "./actions";
 
 interface PublishToggleProps {
@@ -8,6 +9,8 @@ interface PublishToggleProps {
   published: boolean;
 }
 
+// "Publicera" is the screen's primary action; once published it becomes
+// a quieter outline button so it isn't pressed by mistake.
 export function PublishToggle({ sessionId, published }: PublishToggleProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -22,17 +25,9 @@ export function PublishToggle({ sessionId, published }: PublishToggleProps) {
       type="button"
       onClick={toggle}
       disabled={isPending}
-      className={`flex min-h-[44px] items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60
-        ${published
-          ? "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-          : "bg-green-600 text-white hover:bg-green-700"
-        }`}
+      className={published ? `${buttonSecondary} w-full` : buttonPrimary}
     >
-      {isPending
-        ? "…"
-        : published
-        ? "Avpublicera"
-        : "Publicera"}
+      {isPending ? "…" : published ? "Avpublicera" : "Publicera"}
     </button>
   );
 }
