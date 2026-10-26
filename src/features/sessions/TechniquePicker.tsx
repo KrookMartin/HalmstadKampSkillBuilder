@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { setSessionTechniques } from "./actions";
+import { useState } from "react";
 import { categoryLabels } from "@/features/techniques/labels";
 import type { Technique } from "@/features/techniques/queries";
 import {
@@ -11,27 +10,26 @@ import {
   PlusIcon,
   SearchIcon,
 } from "@/components/icons";
-import { buttonSecondary, iconButton, input, meta } from "@/components/ui";
+import { iconButton, input, meta } from "@/components/ui";
 
 interface TechniquePickerProps {
-  sessionId: string;
+  idPrefix: string;
   allTechniques: Technique[];
-  initialSelected: Technique[];
+  selected: Technique[];
+  onChange: (next: Technique[]) => void;
 }
 
-// Lets a coach build the ordered technique list for a session.
-// Reorder uses up/down buttons on purpose — drag-and-drop is unreliable
-// on phones (DESIGN.md). Changes are local until "Spara ordning".
+// Lets a coach build the ordered video list for a session.
+// Controlled: the parent SessionEditor owns the list and saves it together
+// with the rest of the pass. Reorder uses up/down buttons on purpose —
+// drag-and-drop is unreliable on phones (DESIGN.md).
 export function TechniquePicker({
-  sessionId,
+  idPrefix,
   allTechniques,
-  initialSelected,
+  selected,
+  onChange,
 }: TechniquePickerProps) {
-  const [selected, setSelected] = useState<Technique[]>(initialSelected);
   const [query, setQuery] = useState("");
-  const [saved, setSaved] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
   const selectedIds = new Set(selected.map((t) => t.id));
   const q = query.trim().toLowerCase();
@@ -39,32 +37,12 @@ export function TechniquePicker({
     (t) => !selectedIds.has(t.id) && (!q || t.title.toLowerCase().includes(q))
   );
 
-  function change(next: Technique[]) {
-    setSelected(next);
-    setSaved(false);
-  }
-
   function move(index: number, delta: -1 | 1) {
     const target = index + delta;
     if (target < 0 || target >= selected.length) return;
     const next = [...selected];
     [next[index], next[target]] = [next[target], next[index]];
-    change(next);
-  }
-
-  function save() {
-    setError(null);
-    startTransition(async () => {
-      const result = await setSessionTechniques(
-        sessionId,
-        selected.map((t) => t.id)
-      );
-      if (result.success) {
-        setSaved(true);
-      } else {
-        setError(result.error ?? "Något gick fel.");
-      }
-    });
+    onChange(next);
   }
 
   return (
@@ -72,10 +50,14 @@ export function TechniquePicker({
       {/* Current order */}
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-          Ordning ({selected.length})
+          Videor i passet ({selected.length})
         </h3>
+        <p className={meta}>
+          Medlemmarna ser dem i den här ordningen – för att förbereda sig eller
+          ta igen ett missat pass.
+        </p>
         {selected.length === 0 ? (
-          <p className="py-2 text-muted">Lägg till tekniker från arkivet nedan.</p>
+          <p className="py-2 text-muted">Lägg till videor från arkivet nedan.</p>
         ) : (
           <ol className="border-t border-line">
             {selected.map((t, i) => (
@@ -111,9 +93,7 @@ export function TechniquePicker({
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      change(selected.filter((s) => s.id !== t.id))
-                    }
+                    onClick={() => onChange(selected.filter((s) => s.id !== t.id))}
                     aria-label={`Ta bort ${t.title}`}
                     className={`${iconButton} hover:text-red-text`}
                   >
@@ -124,20 +104,6 @@ export function TechniquePicker({
             ))}
           </ol>
         )}
-
-        {error && (
-          <p role="alert" className="text-sm text-red-text">
-            {error}
-          </p>
-        )}
-        <button
-          type="button"
-          onClick={save}
-          disabled={isPending || saved}
-          className={`${buttonSecondary} w-full`}
-        >
-          {isPending ? "Sparar…" : saved ? "Ordningen är sparad" : "Spara ordning"}
-        </button>
       </section>
 
       {/* Archive to add from */}
@@ -146,15 +112,20 @@ export function TechniquePicker({
           Lägg till från arkivet
         </h3>
         <div className="relative">
-          <label htmlFor={`picker-search-${sessionId}`} className="sr-only">
+          <label htmlFor={`${idPrefix}-search`} className="sr-only">
             Sök i arkivet
           </label>
           <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
           <input
-            id={`picker-search-${sessionId}`}
+            id={`${idPrefix}-search`}
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            // The picker sits inside the pass form; Enter here should only
+            // search, not submit the whole pass.
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.preventDefault();
+            }}
             placeholder="Sök teknik…"
             className={`${input} pl-12`}
           />
@@ -178,7 +149,7 @@ export function TechniquePicker({
               </span>
               <button
                 type="button"
-                onClick={() => change([...selected, t])}
+                onClick={() => onChange([...selected, t])}
                 aria-label={`Lägg till ${t.title}`}
                 className={iconButton}
               >

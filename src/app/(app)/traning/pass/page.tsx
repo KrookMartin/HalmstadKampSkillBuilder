@@ -1,9 +1,8 @@
 import { requireRole } from "@/lib/auth";
 import { getAllSessions } from "@/features/sessions/queries";
 import { getTechniques } from "@/features/techniques/queries";
-import { SessionForm } from "@/features/sessions/SessionForm";
+import { SessionEditor } from "@/features/sessions/SessionEditor";
 import { PublishToggle } from "@/features/sessions/PublishToggle";
-import { TechniquePicker } from "@/features/sessions/TechniquePicker";
 import { ChevronRightIcon, PlusIcon } from "@/components/icons";
 import { tag } from "@/components/ui";
 import { formatDayLabel } from "@/lib/date";
@@ -33,7 +32,7 @@ export default async function PassCoachPage() {
           Nytt pass
         </summary>
         <div className="border-t border-line p-4">
-          <SessionForm />
+          <SessionEditor allTechniques={allTechniques} />
         </div>
       </details>
 
@@ -66,16 +65,7 @@ export default async function PassCoachPage() {
                 </summary>
 
                 <div className="space-y-6 pb-6 pt-2">
-                  {s.notes && (
-                    <p className="whitespace-pre-line text-text-soft">
-                      {s.notes}
-                    </p>
-                  )}
-                  <TechniquePicker
-                    sessionId={s.id}
-                    allTechniques={allTechniques}
-                    initialSelected={s.techniques}
-                  />
+                  <SessionEditor existing={s} allTechniques={allTechniques} />
                   <PublishToggle sessionId={s.id} published={s.published} />
                 </div>
               </details>
