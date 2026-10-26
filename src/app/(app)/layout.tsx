@@ -1,10 +1,11 @@
 import { Suspense } from "react";
-import { requireActiveProfile } from "@/lib/auth";
+import { getProfile } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 
-// Single layout for all authenticated pages: header, scrolling <main>,
-// bottom nav (DESIGN.md "Screen shell").
+// Single layout for all app pages: header, scrolling <main>, bottom nav
+// (DESIGN.md "Screen shell"). Member pages are public; coach pages guard
+// themselves (traning/layout.tsx, admin pages).
 //
 // Reading the session (cookies) can't happen at build time, and with
 // Cache Components that read must sit inside <Suspense>. So the layout
@@ -24,16 +25,18 @@ export default function AppLayout({
 }
 
 async function Shell({ children }: { children: React.ReactNode }) {
-  // Redirects to /login (not signed in) or /vantar (pending approval).
-  const profile = await requireActiveProfile();
+  // null for anonymous visitors (members) and for coach accounts that
+  // aren't activated yet — both get the member view.
+  const profile = await getProfile();
+  const role = profile?.status === "active" ? profile.role : null;
 
   return (
     <>
-      <AppHeader role={profile.role} />
+      <AppHeader role={role} />
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-xl px-5 pb-10 pt-6">{children}</div>
       </main>
-      <BottomNav role={profile.role} />
+      <BottomNav role={role} />
     </>
   );
 }

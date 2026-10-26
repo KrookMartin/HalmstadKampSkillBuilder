@@ -17,6 +17,9 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "Halmstad Kampsport",
   description: "Klubbapp för Halmstad Kampsport – BJJ, Wrestling, MMA",
+  // The app is public but only meant for club members: keep it out of
+  // search results (anyone with the link can still open it).
+  robots: { index: false, follow: false },
   manifest: "/manifest.json",
   icons: { apple: "/icons/icon-192.png" },
   appleWebApp: {

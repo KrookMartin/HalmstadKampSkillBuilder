@@ -1,32 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
-import { buttonPrimary, card, input, label } from "@/components/ui";
-import { sendMagicLink, type LoginResult } from "./actions";
-
-const initialState: LoginResult | null = null;
+import { useActionState, startTransition } from "react";
+import { buttonPrimary, input, label } from "@/components/ui";
+import { signIn, type LoginResult } from "./actions";
 
 export function LoginForm() {
-  const [result, action, pending] = useActionState(
-    async (_prev: LoginResult | null, formData: FormData) =>
-      sendMagicLink(formData),
-    initialState
+  const [result, dispatch, pending] = useActionState(
+    async (_prev: LoginResult | null, formData: FormData) => signIn(formData),
+    null
   );
 
-  if (result?.success) {
-    return (
-      <div role="status" className={`${card} space-y-1`}>
-        <p className="font-semibold">Kolla din e-post!</p>
-        <p className="text-text-soft">
-          Vi har skickat en inloggningslänk till dig. Länken är giltig i 60
-          minuter.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <form action={action} className="space-y-4">
+    <form
+      // onSubmit instead of action={…}: React resets forms passed to
+      // `action`, which would clear the email after a wrong password.
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => dispatch(fd));
+      }}
+      className="space-y-4"
+    >
       <div>
         <label htmlFor="email" className={label}>
           E-postadress
@@ -42,6 +36,20 @@ export function LoginForm() {
         />
       </div>
 
+      <div>
+        <label htmlFor="password" className={label}>
+          Lösenord
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className={input}
+        />
+      </div>
+
       {result?.success === false && (
         <p role="alert" className="text-sm text-red-text">
           {result.error}
@@ -49,7 +57,7 @@ export function LoginForm() {
       )}
 
       <button type="submit" disabled={pending} className={buttonPrimary}>
-        {pending ? "Skickar…" : "Skicka inloggningslänk"}
+        {pending ? "Loggar in…" : "Logga in"}
       </button>
     </form>
   );

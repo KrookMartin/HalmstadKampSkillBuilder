@@ -18,7 +18,7 @@ const icons = {
   clipboard: ClipboardIcon,
 };
 
-export function BottomNav({ role }: { role: Role }) {
+export function BottomNav({ role }: { role: Role | null }) {
   const pathname = usePathname();
   const tabs =
     isStaff(role) && isCoachArea(pathname) ? coachTabs : memberTabs;

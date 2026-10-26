@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { requireRole, requireActiveProfile } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -56,51 +56,6 @@ export async function deleteWeek(weekId: string): Promise<WeekResult> {
     .eq("id", weekId);
 
   if (error) return { success: false, error: "Kunde inte ta bort veckan." };
-
-  revalidatePath("/styrka");
-  revalidatePath("/traning/styrka");
-  return { success: true };
-}
-
-// ── Member actions ────────────────────────────────────────────────────────────
-
-export async function startPeakProgram(
-  startDate: string
-): Promise<WeekResult> {
-  const profile = await requireActiveProfile();
-
-  const parsed = z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ogiltigt datum")
-    .safeParse(startDate);
-
-  if (!parsed.success) {
-    return { success: false, error: "Ogiltigt startdatum." };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("member_peak_start").upsert(
-    { member_id: profile.id, started_at: parsed.data },
-    { onConflict: "member_id" }
-  );
-
-  if (error) return { success: false, error: "Kunde inte spara startdatum." };
-
-  revalidatePath("/styrka");
-  revalidatePath("/traning/styrka");
-  return { success: true };
-}
-
-export async function cancelPeakProgram(): Promise<WeekResult> {
-  const profile = await requireActiveProfile();
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("member_peak_start")
-    .delete()
-    .eq("member_id", profile.id);
-
-  if (error) return { success: false, error: "Kunde inte avbryta." };
 
   revalidatePath("/styrka");
   revalidatePath("/traning/styrka");

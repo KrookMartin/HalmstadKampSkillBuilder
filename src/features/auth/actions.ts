@@ -1,43 +1,44 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
-const emailSchema = z.object({
-  email: z.string().email("Ange en giltig e-postadress"),
+// Coach login with email + password. Accounts are created by an admin in
+// the Supabase dashboard, so no emails are ever sent by the app.
+const loginSchema = z.object({
+  email: z.email("Ange en giltig e-postadress"),
+  password: z.string().min(1, "Ange ditt lösenord"),
 });
 
-export type LoginResult =
-  | { success: true }
-  | { success: false; error: string };
+export type LoginResult = { success: false; error: string };
 
-export async function sendMagicLink(
-  formData: FormData
-): Promise<LoginResult> {
-  const parsed = emailSchema.safeParse({ email: formData.get("email") });
+export async function signIn(formData: FormData): Promise<LoginResult> {
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-    options: {
-      // After clicking the link the user lands on /auth/callback which
-      // exchanges the token and redirects them to /idag.
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-    },
-  });
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    // Don't leak whether the email exists – return a generic message.
-    console.error("Magic link error:", error.message);
-    return {
-      success: false,
-      error: "Något gick fel. Försök igen om en stund.",
-    };
+    // Same message for wrong email and wrong password, so the form can't be
+    // used to find out which emails have accounts.
+    console.error("Login error:", error.message);
+    return { success: false, error: "Fel e-post eller lösenord." };
   }
 
-  return { success: true };
+  // redirect() throws, so nothing after this runs.
+  redirect("/traning/pass");
+}
+
+export async function signOut(): Promise<void> {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/idag");
 }

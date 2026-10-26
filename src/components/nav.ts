@@ -6,7 +6,7 @@ export function isCoachArea(pathname: string): boolean {
   return pathname.startsWith("/traning") || pathname.startsWith("/admin");
 }
 
-export function isStaff(role: Role): boolean {
+export function isStaff(role: Role | null): boolean {
   return role === "coach" || role === "admin";
 }
 

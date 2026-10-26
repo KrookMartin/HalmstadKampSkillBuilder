@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-// Shown to users whose status is still 'pending'.
-// They're authenticated but not yet approved by an admin.
+// Shown to coach accounts whose status is still 'pending':
+// logged in, but not yet activated by an admin.
 export default function VantarPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
@@ -12,8 +12,8 @@ export default function VantarPage() {
           <h1 className="page-title">Väntar på godkännande</h1>
         </div>
         <p className="text-text-soft">
-          Ditt konto väntar på godkännande av en tränare. Du får tillgång till
-          appen så snart det är klart.
+          Ditt tränarkonto väntar på att en admin aktiverar det. Du kommer åt
+          tränarvyerna så snart det är klart.
         </p>
         <p className="text-sm text-muted">
           Frågor? Hör av dig till{" "}

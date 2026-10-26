@@ -39,29 +39,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      member_peak_start: {
-        Row: {
-          member_id: string
-          started_at: string
-        }
-        Insert: {
-          member_id: string
-          started_at?: string
-        }
-        Update: {
-          member_id?: string
-          started_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "member_peak_start_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           created_at: string
@@ -281,7 +258,6 @@ export type Database = {
         Args: { roles: Database["public"]["Enums"]["user_role"][] }
         Returns: boolean
       }
-      is_active: { Args: never; Returns: boolean }
     }
     Enums: {
       program_type: "base" | "peak"

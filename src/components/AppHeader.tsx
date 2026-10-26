@@ -8,7 +8,7 @@ import { isCoachArea, isStaff } from "./nav";
 import { UsersIcon } from "./icons";
 import { iconButton } from "./ui";
 
-export function AppHeader({ role }: { role: Role }) {
+export function AppHeader({ role }: { role: Role | null }) {
   const pathname = usePathname();
   const inCoachArea = isCoachArea(pathname);
 
@@ -26,21 +26,20 @@ export function AppHeader({ role }: { role: Role }) {
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Coaches switch between the member view and their tools. */}
-          {isStaff(role) && (
-            <Link
-              href={inCoachArea ? "/idag" : "/traning/pass"}
-              className="flex min-h-[44px] items-center rounded-full border border-line-strong px-3.5 text-xs font-semibold uppercase tracking-wide text-text-soft hover:text-text focus-visible:outline-2 focus-visible:outline-red-text"
-            >
-              {inCoachArea ? "Medlem" : "Tränare"}
-            </Link>
-          )}
+          {/* Coaches switch between the member view and their tools.
+              Everyone else gets the same button, leading to the login. */}
+          <Link
+            href={!isStaff(role) ? "/login" : inCoachArea ? "/idag" : "/traning/pass"}
+            className="flex min-h-[44px] items-center rounded-full border border-line-strong px-3.5 text-xs font-semibold uppercase tracking-wide text-text-soft hover:text-text focus-visible:outline-2 focus-visible:outline-red-text"
+          >
+            {isStaff(role) && inCoachArea ? "Medlem" : "Tränare"}
+          </Link>
           {role === "admin" && (
             <Link
-              href="/admin/medlemmar"
-              aria-label="Medlemmar"
+              href="/admin/konton"
+              aria-label="Konton"
               aria-current={
-                pathname.startsWith("/admin/medlemmar") ? "page" : undefined
+                pathname.startsWith("/admin/konton") ? "page" : undefined
               }
               className={`${iconButton} aria-[current=page]:text-red-text`}
             >

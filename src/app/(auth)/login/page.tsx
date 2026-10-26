@@ -1,8 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 import { LoginForm } from "@/features/auth/LoginForm";
 
 export const metadata = {
-  title: "Logga in – Halmstad Kampsport",
+  title: "Tränarinloggning – Halmstad Kampsport",
 };
 
 export default function LoginPage() {
@@ -18,9 +19,11 @@ export default function LoginPage() {
             priority
           />
           <div className="space-y-3">
+            <p className="eyebrow">Tränare</p>
             <h1 className="page-title">Logga in</h1>
             <p className="text-muted">
-              Ange din e-post så skickar vi en inloggningslänk.
+              Medlemmar behöver inte logga in – passen och teknikerna är öppna
+              för alla.
             </p>
           </div>
         </div>
@@ -28,13 +31,12 @@ export default function LoginPage() {
         <LoginForm />
 
         <p className="text-center text-sm text-muted">
-          Inte medlem än?{" "}
-          <a
-            href="https://www.halmstadkampsport.se"
+          <Link
+            href="/idag"
             className="font-semibold text-red-text underline underline-offset-4"
           >
-            Läs mer om klubben
-          </a>
+            Tillbaka till appen
+          </Link>
         </p>
       </div>
     </main>
