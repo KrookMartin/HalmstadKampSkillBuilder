@@ -33,7 +33,7 @@ export default async function StyrkaCoachPage() {
 
       {[
         { program: baseProgram, weeks: baseWeeks, title: "Grundprogram" },
-        { program: peakProgram, weeks: peakWeeks, title: "Toppning" },
+        { program: peakProgram, weeks: peakWeeks, title: "Comp prep" },
       ].map(({ program, weeks, title }) => (
         <section key={title} className="space-y-4">
           <h2 className="section-title">{title}</h2>

@@ -20,7 +20,7 @@ export function PeakProgress({ current, total }: { current: number; total: numbe
   return (
     <div
       role="progressbar"
-      aria-label="Vecka i toppningsprogrammet"
+      aria-label="Vecka i comp prep-programmet"
       aria-valuemin={1}
       aria-valuemax={total}
       aria-valuenow={current}

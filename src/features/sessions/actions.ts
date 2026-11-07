@@ -49,8 +49,21 @@ export async function saveSession(
 
   let id = sessionId;
   if (id) {
-    const { error } = await supabase.from("sessions").update(fields).eq("id", id);
+    // Zero rows means the pass is gone (e.g. another coach deleted it) or
+    // RLS blocked the update; neither is reported as an error, so check
+    // before touching the video list.
+    const { data, error } = await supabase
+      .from("sessions")
+      .update(fields)
+      .eq("id", id)
+      .select("id");
     if (error) return { success: false, error: "Kunde inte spara passet." };
+    if (data.length === 0) {
+      return {
+        success: false,
+        error: "Passet finns inte längre. Ladda om sidan.",
+      };
+    }
   } else {
     const { data, error } = await supabase
       .from("sessions")
