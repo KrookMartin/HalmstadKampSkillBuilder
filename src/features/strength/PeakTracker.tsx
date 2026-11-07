@@ -41,7 +41,7 @@ export function PeakTracker({ totalWeeks, weeks }: PeakTrackerProps) {
   if (startDate > today) {
     return (
       <section className="space-y-5">
-        <p className="text-text-soft">Toppningen startar {formatDayLabel(startDate)}.</p>
+        <p className="text-text-soft">Comp prep startar {formatDayLabel(startDate)}.</p>
         <CancelPeakButton />
       </section>
     );
@@ -103,7 +103,7 @@ function PeakStartForm({ today }: { today: string }) {
       </div>
       <p className="text-sm text-muted">Sparas bara i den här telefonen.</p>
       <button type="submit" className={buttonPrimary}>
-        Starta toppning
+        Starta comp prep
       </button>
     </form>
   );
@@ -116,7 +116,7 @@ function CancelPeakButton() {
       onClick={() => setPeakStart(null)}
       className={`${buttonSecondary} w-full`}
     >
-      Avbryt toppningsprogram
+      Avbryt comp prep
     </button>
   );
 }

@@ -29,7 +29,7 @@ export default async function StyrkaMemberPage({ searchParams }: PageProps) {
           Grundprogram
         </TabLink>
         <TabLink href="/styrka?flik=toppning" active={tab === "toppning"}>
-          Toppning
+          Comp prep
         </TabLink>
       </nav>
 
@@ -86,7 +86,7 @@ async function PeakTab() {
   const program = await getProgram("peak");
   if (!program) {
     return (
-      <p className="text-muted">Toppningsprogrammet är inte publicerat än.</p>
+      <p className="text-muted">Comp prep-programmet är inte publicerat än.</p>
     );
   }
 
