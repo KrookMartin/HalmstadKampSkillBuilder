@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { buildEmbedUrl, parseYoutubeUrl } from "@/lib/youtube";
 import { ExternalIcon, WarningIcon } from "./icons";
 
+const DEAD_VIDEO_STATUSES = new Set([401, 403, 404, 410]);
+
 interface YoutubeEmbedProps {
   url: string;
   title: string;
@@ -18,9 +20,11 @@ export function YoutubeEmbed({ url, title }: YoutubeEmbedProps) {
 
   // A dead video still loads YouTube's own error page inside the iframe, so
   // the iframe's onError never fires. Instead we ask YouTube's oEmbed
-  // endpoint (allowed from the browser, no API key): it answers 4xx for
-  // deleted/private/non-embeddable videos. Network errors or 5xx keep the
-  // player, so a flaky connection doesn't show a false "dead video".
+  // endpoint (allowed from the browser, no API key). Only statuses that mean
+  // the video itself is gone count as dead: 401/403 (private or embedding
+  // disabled), 404 (deleted), 410 (removed). Anything else, such as 429
+  // (rate limited), 5xx or a network error, keeps the player, so a busy
+  // YouTube or a flaky connection never shows a false "dead video".
   useEffect(() => {
     if (!videoId) return;
     const controller = new AbortController();
@@ -30,7 +34,7 @@ export function YoutubeEmbed({ url, title }: YoutubeEmbedProps) {
       { signal: controller.signal }
     )
       .then((res) => {
-        if (res.status >= 400 && res.status < 500) setFailed(true);
+        if (DEAD_VIDEO_STATUSES.has(res.status)) setFailed(true);
       })
       .catch(() => {});
     return () => controller.abort();
