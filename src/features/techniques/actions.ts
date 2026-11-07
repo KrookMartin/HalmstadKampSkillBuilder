@@ -54,9 +54,9 @@ export async function updateTechnique(
   }
 
   const supabase = await createClient();
-  // RLS only lets coaches update their own techniques (admins: all). A row
-  // blocked by RLS is not an error, it just isn't updated, so ask for the
-  // updated row back and treat "no row" as a failure.
+  // Zero rows means the technique is gone (e.g. another coach deleted it)
+  // or RLS blocked the update; neither is reported as an error, so ask for
+  // the updated row back and treat "no row" as a failure.
   const { data, error } = await supabase
     .from("techniques")
     .update(parsed.data)
@@ -69,7 +69,7 @@ export async function updateTechnique(
   if (data.length === 0) {
     return {
       success: false,
-      error: "Du kan bara redigera tekniker som du själv har lagt in.",
+      error: "Tekniken finns inte längre. Ladda om sidan.",
     };
   }
 

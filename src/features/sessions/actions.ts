@@ -49,9 +49,9 @@ export async function saveSession(
 
   let id = sessionId;
   if (id) {
-    // A row blocked by RLS (another coach's pass) is skipped without an
-    // error, so check that the update actually hit a row before touching
-    // the video list.
+    // Zero rows means the pass is gone (e.g. another coach deleted it) or
+    // RLS blocked the update; neither is reported as an error, so check
+    // before touching the video list.
     const { data, error } = await supabase
       .from("sessions")
       .update(fields)
@@ -61,7 +61,7 @@ export async function saveSession(
     if (data.length === 0) {
       return {
         success: false,
-        error: "Du kan bara redigera pass som du själv har skapat.",
+        error: "Passet finns inte längre. Ladda om sidan.",
       };
     }
   } else {
