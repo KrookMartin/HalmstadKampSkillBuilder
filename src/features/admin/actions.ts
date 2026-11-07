@@ -15,11 +15,18 @@ export type AdminResult =
   | { success: true }
   | { success: false; error: string };
 
+// An admin may not change their own status or role. This also guarantees
+// there is always at least one active admin: whoever makes a change is an
+// active admin and stays one. (If ever needed, an admin can still be fixed
+// from the Supabase SQL editor, see README.)
+const SELF_CHANGE_ERROR = "Du kan inte ändra ditt eget konto.";
+
 export async function updateMemberStatus(
   memberId: string,
   status: "pending" | "active" | "inactive"
 ): Promise<AdminResult> {
-  await requireRole(["admin"]);
+  const admin = await requireRole(["admin"]);
+  if (memberId === admin.id) return { success: false, error: SELF_CHANGE_ERROR };
 
   const parsed = updateProfileSchema.safeParse({ memberId, status });
   if (!parsed.success) {
@@ -42,7 +49,8 @@ export async function updateMemberRole(
   memberId: string,
   role: "member" | "coach" | "admin"
 ): Promise<AdminResult> {
-  await requireRole(["admin"]);
+  const admin = await requireRole(["admin"]);
+  if (memberId === admin.id) return { success: false, error: SELF_CHANGE_ERROR };
 
   const parsed = updateProfileSchema.safeParse({ memberId, role });
   if (!parsed.success) {

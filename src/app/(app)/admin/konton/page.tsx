@@ -6,7 +6,7 @@ import { card } from "@/components/ui";
 // Coach/admin accounts. Members don't have accounts (the app is public),
 // so this lists only people you've created in the Supabase dashboard.
 export default async function KontonAdminPage() {
-  await requireRole(["admin"]);
+  const admin = await requireRole(["admin"]);
   const profiles = await getAllProfiles();
 
   const pending = profiles.filter((p) => p.status === "pending");
@@ -24,7 +24,7 @@ export default async function KontonAdminPage() {
           <h2 className="section-title">
             Väntar på godkännande ({pending.length})
           </h2>
-          <MemberList members={pending} />
+          <MemberList members={pending} selfId={admin.id} />
         </section>
       )}
 
@@ -42,7 +42,7 @@ export default async function KontonAdminPage() {
 
       <section className="space-y-2">
         <h2 className="section-title">Alla konton ({rest.length})</h2>
-        <MemberList members={rest} />
+        <MemberList members={rest} selfId={admin.id} />
       </section>
     </div>
   );
@@ -50,8 +50,10 @@ export default async function KontonAdminPage() {
 
 function MemberList({
   members,
+  selfId,
 }: {
   members: Awaited<ReturnType<typeof getAllProfiles>>;
+  selfId: string;
 }) {
   if (members.length === 0) {
     return <p className="py-4 text-muted">Inga konton att visa.</p>;
@@ -60,7 +62,7 @@ function MemberList({
   return (
     <ul className="border-t border-line">
       {members.map((m) => (
-        <MemberRow key={m.id} member={m} />
+        <MemberRow key={m.id} member={m} isSelf={m.id === selfId} />
       ))}
     </ul>
   );
