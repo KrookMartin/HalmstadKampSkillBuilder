@@ -54,14 +54,23 @@ export async function updateTechnique(
   }
 
   const supabase = await createClient();
-  // RLS policy allows coaches to only update their own techniques.
-  const { error } = await supabase
+  // RLS only lets coaches update their own techniques (admins: all). A row
+  // blocked by RLS is not an error, it just isn't updated, so ask for the
+  // updated row back and treat "no row" as a failure.
+  const { data, error } = await supabase
     .from("techniques")
     .update(parsed.data)
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
 
   if (error) {
     return { success: false, error: "Kunde inte uppdatera tekniken." };
+  }
+  if (data.length === 0) {
+    return {
+      success: false,
+      error: "Du kan bara redigera tekniker som du själv har lagt in.",
+    };
   }
 
   revalidatePath("/traning/arkiv");
