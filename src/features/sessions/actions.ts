@@ -49,8 +49,21 @@ export async function saveSession(
 
   let id = sessionId;
   if (id) {
-    const { error } = await supabase.from("sessions").update(fields).eq("id", id);
+    // A row blocked by RLS (another coach's pass) is skipped without an
+    // error, so check that the update actually hit a row before touching
+    // the video list.
+    const { data, error } = await supabase
+      .from("sessions")
+      .update(fields)
+      .eq("id", id)
+      .select("id");
     if (error) return { success: false, error: "Kunde inte spara passet." };
+    if (data.length === 0) {
+      return {
+        success: false,
+        error: "Du kan bara redigera pass som du själv har skapat.",
+      };
+    }
   } else {
     const { data, error } = await supabase
       .from("sessions")
