@@ -70,7 +70,8 @@ export function TechniqueCard({ technique }: TechniqueCardProps) {
                   {technique.notes}
                 </p>
               )}
-              <div className="flex gap-2">
+              {/* flex-wrap: the delete confirmation takes a full row */}
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -89,34 +90,50 @@ export function TechniqueCard({ technique }: TechniqueCardProps) {
 }
 
 // Two-step delete so a mis-tap on a phone doesn't remove a technique.
+// Deleting also removes the video from every pass that uses it (on delete
+// cascade), possibly another coach's, so the confirm step says so.
 function DeleteButton({ id }: { id: string }) {
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
     setPending(true);
-    await deleteTechnique(id);
+    setError(null);
+    const res = await deleteTechnique(id);
+    // On success the card disappears when the page revalidates.
+    if (!res.success) setError(res.error);
     setPending(false);
   }
 
   if (confirming) {
     return (
-      <div className="flex flex-1 gap-2">
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={pending}
-          className={`${buttonDanger} flex-1`}
-        >
-          {pending ? "Tar bort…" : "Ja, ta bort"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setConfirming(false)}
-          className={buttonSecondary}
-        >
-          Avbryt
-        </button>
+      <div className="flex w-full flex-col gap-2">
+        <p className="text-sm">
+          Tekniken tas också bort från alla pass där den används.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={pending}
+            className={`${buttonDanger} flex-1`}
+          >
+            {pending ? "Tar bort…" : "Ja, ta bort"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className={buttonSecondary}
+          >
+            Avbryt
+          </button>
+        </div>
+        {error && (
+          <p role="alert" className="text-sm text-red-text">
+            {error}
+          </p>
+        )}
       </div>
     );
   }
