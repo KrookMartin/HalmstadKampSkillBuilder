@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { buttonPrimary, buttonSecondary, meta, tag } from "@/components/ui";
 import { updateMemberStatus, updateMemberRole } from "./actions";
 import type { Profile } from "@/lib/auth";
@@ -17,19 +17,32 @@ const roleLabels: Record<Profile["role"], string> = {
   admin: "Admin",
 };
 
-export function MemberRow({ member }: { member: Profile }) {
+// isSelf: the logged-in admin's own row. It gets no buttons, since the
+// actions refuse to let admins change their own account (no lock-out).
+export function MemberRow({
+  member,
+  isSelf,
+}: {
+  member: Profile;
+  isSelf: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  function setStatus(status: Profile["status"]) {
+  function run(action: () => ReturnType<typeof updateMemberStatus>) {
     startTransition(async () => {
-      await updateMemberStatus(member.id, status);
+      setError(null);
+      const res = await action();
+      if (!res.success) setError(res.error);
     });
   }
 
+  function setStatus(status: Profile["status"]) {
+    run(() => updateMemberStatus(member.id, status));
+  }
+
   function setRole(role: Profile["role"]) {
-    startTransition(async () => {
-      await updateMemberRole(member.id, role);
-    });
+    run(() => updateMemberRole(member.id, role));
   }
 
   return (
@@ -57,52 +70,62 @@ export function MemberRow({ member }: { member: Profile }) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {member.status !== "active" && (
-          <button
-            type="button"
-            onClick={() => setStatus("active")}
-            disabled={isPending}
-            className={
-              member.status === "pending"
-                ? `${buttonPrimary} min-h-[44px] w-auto flex-1 text-sm`
-                : buttonSecondary
-            }
-          >
-            {member.status === "pending" ? "Godkänn" : "Aktivera"}
-          </button>
-        )}
-        {member.status === "active" && (
-          <button
-            type="button"
-            onClick={() => setStatus("inactive")}
-            disabled={isPending}
-            className={buttonSecondary}
-          >
-            Inaktivera
-          </button>
-        )}
-        {member.role !== "coach" && (
-          <button
-            type="button"
-            onClick={() => setRole("coach")}
-            disabled={isPending}
-            className={buttonSecondary}
-          >
-            Gör till tränare
-          </button>
-        )}
-        {member.role !== "member" && (
-          <button
-            type="button"
-            onClick={() => setRole("member")}
-            disabled={isPending}
-            className={buttonSecondary}
-          >
-            Gör till medlem
-          </button>
-        )}
-      </div>
+      {isSelf ? (
+        <p className={meta}>Det här är ditt konto.</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {member.status !== "active" && (
+            <button
+              type="button"
+              onClick={() => setStatus("active")}
+              disabled={isPending}
+              className={
+                member.status === "pending"
+                  ? `${buttonPrimary} min-h-[44px] w-auto flex-1 text-sm`
+                  : buttonSecondary
+              }
+            >
+              {member.status === "pending" ? "Godkänn" : "Aktivera"}
+            </button>
+          )}
+          {member.status === "active" && (
+            <button
+              type="button"
+              onClick={() => setStatus("inactive")}
+              disabled={isPending}
+              className={buttonSecondary}
+            >
+              Inaktivera
+            </button>
+          )}
+          {member.role !== "coach" && (
+            <button
+              type="button"
+              onClick={() => setRole("coach")}
+              disabled={isPending}
+              className={buttonSecondary}
+            >
+              Gör till tränare
+            </button>
+          )}
+          {member.role !== "member" && (
+            <button
+              type="button"
+              onClick={() => setRole("member")}
+              disabled={isPending}
+              className={buttonSecondary}
+            >
+              Gör till medlem
+            </button>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p role="alert" className="text-sm text-red-text">
+          {error}
+        </p>
+      )}
     </li>
   );
 }
