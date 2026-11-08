@@ -76,7 +76,7 @@ Håll feature-logik i `src/features/<namn>/`. Sidor i `app/` ska vara tunna.
 - Spara aldrig hemligheter i repot. Använd `.env.local` och uppdatera `.env.example`.
 - Spara så lite persondata som möjligt: inga medlemsdata alls, bara tränares namn + e-post.
   Inga hälsouppgifter.
-- Skriv tester för `youtube.ts` och för logiken som räknar ut aktuell vecka i toppningsprogram.
+- Skriv tester för `youtube.ts` och för `parseWeek.ts`.
 
 ## Domänregler
 
@@ -94,8 +94,9 @@ Håll feature-logik i `src/features/<namn>/`. Sidor i `app/` ska vara tunna.
   samt en ordnad lista med YouTube-klipp hämtade från teknikarkivet.
 - Teknikarkivet kategoriseras med dessa fasta kategorier (ingen disciplin-tagg):
   Guards, Passing, Takedowns, Upper Body Submissions, Lower Body Submissions, Sweeps.
-- S&C: ett `base`-program (6–8 veckor, loopar om) visas för alla.
-  Ett `peak`-program (tävlingsförberedelse) kan hoppas på oavsett var i grundprogrammet
-  man befinner sig. Startdatumet sparas i medlemmens webbläsare (localStorage).
-  Peak ersätter inte base-visningen — de visas separat.
+- S&C: två statiska program, `base` (grundprogram) och `peak` (comp prep), som visas
+  separat. Medlemmen väljer själv vecka; appen räknar inte ut "aktuell vecka" och sparar
+  inga startdatum. Skillnaden mellan programmen är övningsvalet (peak = mer explosivt).
+- Veckans innehåll är fritext i ett enkelt radformat (`## Dag`, `A. Övning | dos | länk`)
+  som tolkas av `src/features/strength/parseWeek.ts`.
 - YouTube-länkar kan dö. Visa en tydlig reservvy om en video inte går att spela.
