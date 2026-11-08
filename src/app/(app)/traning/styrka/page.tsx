@@ -151,7 +151,7 @@ function WeekFields({
           name="title"
           defaultValue={title}
           required
-          placeholder="t.ex. Pass A – maxstyrka"
+          placeholder="t.ex. Vecka 1"
           className={input}
         />
       </div>
@@ -164,10 +164,25 @@ function WeekFields({
           name="content"
           defaultValue={content}
           required
-          rows={6}
-          placeholder="Träningsinnehåll för veckan…"
+          rows={14}
+          placeholder={"## Dag 1 – Ben\nA. Box squat | 6-8 x 3-4 set | https://youtu.be/…"}
+          aria-describedby={`${idPrefix}-format`}
           className={input}
         />
+        {/* Keep in sync with the format in features/strength/parseWeek.ts */}
+        <ul
+          id={`${idPrefix}-format`}
+          className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted"
+        >
+          <li>
+            <code>## Dag 1 – Ben</code> startar en ny dag.
+          </li>
+          <li>
+            <code>A. Övning | reps x set | länk</code> blir en övning. Samma
+            bokstav (B1, B2) = superset. Länken är valfri.
+          </li>
+          <li>Andra rader visas som vanlig text.</li>
+        </ul>
       </div>
     </>
   );
